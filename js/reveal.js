@@ -3476,6 +3476,40 @@
 
 		if( isAttachedToDOM && isVisible ) {
 			event.target.currentTime = 0;
+
+			if(event.target.currentSrc) {
+				var params = new URL('http://example.com/' + new URL(event.target.currentSrc).hash.replace('#', '?')).searchParams
+
+				if(params.get('t')) {
+					var times = params.get('t').split(',')
+					if(times.length > 0) {
+						var startTime = times[0];
+						event.target.currentTime = startTime;
+					}
+
+					if(times.length > 1) {
+						var startTime = times[0];
+						var stopTime = times[1];
+
+						function stopTheVideo() {
+							if(this.currentTime > stopTime) {
+								this.currentTime = stopTime;
+								this.pause();
+
+								if(this.loop) {
+									this.currentTime = startTime;
+									this.play();
+								} else {
+									this.removeEventListener('timeupdate', stopTheVideo);
+								}
+							}
+						}
+
+						event.target.addEventListener('timeupdate', stopTheVideo);
+					}
+				}
+			}
+
 			event.target.play();
 		}
 
